@@ -7,3 +7,4 @@ catboost
 xgboost
 gunicorn
 dash-bootstrap-components
+joblib
