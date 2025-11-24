@@ -756,7 +756,7 @@ subtabs_resultados = dcc.Tabs([
             html.H5("Variables Categóricas"),
             dcc.Dropdown(
                 id='eda2-cat-dropdown',
-                options=[{'label': v, 'value': v} for v in categoricas+binarias if v not in ["native.country"]],
+                options=[{'label': v, 'value': v} for v in categoricas+binarias+['income'] if v not in ["native.country"]],
                 value=[v for v in categoricas if v not in ["native.country"]][0],
                 clearable=False
             ),
@@ -826,7 +826,118 @@ subtabs_resultados = dcc.Tabs([
         'fontWeight': 'bold'
     }),
 
-    dcc.Tab(label='c. Visualización del Modelo', children=[
+    dcc.Tab(label='c. Análisis de Correlación', children=[
+    html.Div([
+        html.H4('Análisis de Correlación entre Variables Numéricas', 
+                style={'textAlign': 'center', 'color': '#2c3e50', 'marginBottom': '30px'}),
+        
+        dbc.Row([
+            # Columna para la matriz de correlación
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardHeader(
+                        html.H5("Matriz de Correlación", 
+                               style={'color': '#2c3e50', 'margin': '0', 'textAlign': 'center', 'fontWeight': 'bold'})
+                    ),
+                    dbc.CardBody([
+                        dcc.Graph(
+                            figure=px.imshow(
+                                df[numericas].corr(),
+                                text_auto=True,
+                                aspect="auto",
+                                color_continuous_scale='RdBu_r',
+                                width=700,
+                                height=500
+                            ).update_layout(
+                                font=dict(size=12),
+                                margin=dict(l=50, r=50, t=30, b=50),
+                                xaxis=dict(tickangle=45),
+                                yaxis=dict(tickangle=0)
+                            ).update_traces(
+                                hovertemplate="<b>%{x}</b> vs <b>%{y}</b><br>Correlación: %{z:.3f}<extra></extra>"
+                            )
+                        )
+                    ])
+                ], style={'boxShadow': '0 4px 12px rgba(0,0,0,0.15)', 'border': 'none', 'height': '100%'})
+            ], width=7),
+            
+            # Columna para la guía de interpretación
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardHeader(
+                        html.H5("Guía de Interpretación", 
+                               style={'color': '#2c3e50', 'margin': '0', 'textAlign': 'center', 'fontWeight': 'bold'})
+                    ),
+                    dbc.CardBody([
+                        html.Div([
+                            # Correlación Positiva
+                            dbc.Row([
+                                dbc.Col([
+                                    html.Div([
+                                        html.Div("▲", style={'color': '#e74c3c', 'fontSize': '24px', 'fontWeight': 'bold', 'textAlign': 'center', 'marginBottom': '8px'}),
+                                        html.Div("Correlación Positiva", style={'fontWeight': 'bold', 'fontSize': '14px', 'color': '#2c3e50', 'textAlign': 'center'}),
+                                        html.Hr(style={'borderTop': '2px solid #e74c3c', 'width': '80%', 'margin': '8px auto'}),
+                                        html.Div("Valores > 0", style={'fontSize': '12px', 'color': '#666', 'textAlign': 'center', 'marginBottom': '4px'}),
+                                        html.Div("Variables aumentan juntas", style={'fontSize': '12px', 'color': '#666', 'textAlign': 'center'})
+                                    ], style={'padding': '20px', 'backgroundColor': '#fdf2f2', 'borderRadius': '10px', 'height': '100%', 'border': '2px solid #e74c3c'})
+                                ], width=6, className="mb-3"),
+                                
+                                # Correlación Negativa
+                                dbc.Col([
+                                    html.Div([
+                                        html.Div("▼", style={'color': '#3498db', 'fontSize': '24px', 'fontWeight': 'bold', 'textAlign': 'center', 'marginBottom': '8px'}),
+                                        html.Div("Correlación Negativa", style={'fontWeight': 'bold', 'fontSize': '14px', 'color': '#2c3e50', 'textAlign': 'center'}),
+                                        html.Hr(style={'borderTop': '2px solid #3498db', 'width': '80%', 'margin': '8px auto'}),
+                                        html.Div("Valores < 0", style={'fontSize': '12px', 'color': '#666', 'textAlign': 'center', 'marginBottom': '4px'}),
+                                        html.Div("Una aumenta, otra disminuye", style={'fontSize': '12px', 'color': '#666', 'textAlign': 'center'})
+                                    ], style={'padding': '20px', 'backgroundColor': '#f0f8ff', 'borderRadius': '10px', 'height': '100%', 'border': '2px solid #3498db'})
+                                ], width=6, className="mb-3")
+                            ]),
+                            
+                            # Sin Correlación y Escala
+                            dbc.Row([
+                                dbc.Col([
+                                    html.Div([
+                                        html.Div("●", style={'color': '#95a5a6', 'fontSize': '24px', 'fontWeight': 'bold', 'textAlign': 'center', 'marginBottom': '8px'}),
+                                        html.Div("Sin Correlación", style={'fontWeight': 'bold', 'fontSize': '14px', 'color': '#2c3e50', 'textAlign': 'center'}),
+                                        html.Hr(style={'borderTop': '2px solid #95a5a6', 'width': '80%', 'margin': '8px auto'}),
+                                        html.Div("Valores ≈ 0", style={'fontSize': '12px', 'color': '#666', 'textAlign': 'center', 'marginBottom': '4px'}),
+                                        html.Div("No hay relación lineal", style={'fontSize': '12px', 'color': '#666', 'textAlign': 'center'})
+                                    ], style={'padding': '20px', 'backgroundColor': '#f8f9fa', 'borderRadius': '10px', 'height': '100%', 'border': '2px solid #95a5a6'})
+                                ], width=6, className="mb-3"),
+                                
+                                dbc.Col([
+                                    html.Div([
+                                        html.Div("●", style={'fontSize': '24px', 'textAlign': 'center', 'marginBottom': '8px'}),
+                                        html.Div("Escala", style={'fontWeight': 'bold', 'fontSize': '14px', 'color': '#2c3e50', 'textAlign': 'center'}),
+                                        html.Hr(style={'borderTop': '2px solid #f39c12', 'width': '80%', 'margin': '8px auto'}),
+                                        html.Div("-1 a +1", style={'fontSize': '12px', 'color': '#666', 'textAlign': 'center', 'marginBottom': '4px'}),
+                                        html.Div("Rango completo", style={'fontSize': '12px', 'color': '#666', 'textAlign': 'center'})
+                                    ], style={'padding': '20px', 'backgroundColor': '#fff8e8', 'borderRadius': '10px', 'height': '100%', 'border': '2px solid #f39c12'})
+                                ], width=6, className="mb-3")
+                            ])
+                        ])
+                    ])
+                ], style={'boxShadow': '0 4px 12px rgba(0,0,0,0.15)', 'border': 'none', 'height': '100%'})
+            ], width=5)
+        ])
+    ], style={'padding': '20px'})
+], style={
+        'backgroundColor': '#f8f9fa',
+        'color': '#2c3e50',
+        'border': '1px solid #dee2e6',
+        'padding': '10px',
+        'fontWeight': 'bold'
+    },
+    selected_style={
+        'backgroundColor': '#007bff',
+        'color': 'white',
+        'border': '1px solid #007bff',
+        'padding': '10px',
+        'fontWeight': 'bold'
+    }),
+
+    dcc.Tab(label='d. Visualización del Modelo', children=[
         html.H4('Visualización de Resultados del Modelo', style={'textAlign': 'center', 'marginBottom': '40px'}),
         dcc.Dropdown(
             id='modelo-dropdown',
@@ -850,7 +961,7 @@ subtabs_resultados = dcc.Tabs([
         'fontWeight': 'bold'
     }),
 
-    dcc.Tab(label='d. Indicadores del Modelo', children=[
+    dcc.Tab(label='e. Indicadores del Modelo', children=[
         html.H4('Indicadores de Evaluación del Modelo', style={'textAlign': 'center', 'marginBottom': '40px'}),
         html.Div(id='indicadores-modelo')
     ], style={
@@ -868,7 +979,7 @@ subtabs_resultados = dcc.Tabs([
         'fontWeight': 'bold'
     }),
     
-    dcc.Tab(label='e. Limitaciones', children=[
+    dcc.Tab(label='f. Limitaciones', children=[
     html.H4('Limitaciones y Consideraciones Finales', style={'textAlign': 'center', 'marginBottom': '40px'}),
     
     dbc.Row([
@@ -981,26 +1092,310 @@ selected_style={
 #TABS GENERALES========================================================================
 
 tabs = [
+    dcc.Tab(label='0. Portada', children=[
+    html.Div([
+        # Header con logo
+        dbc.Row([
+            dbc.Col([
+                html.Div([
+                    html.Img(src='assets/uninorte.png', style={'height': '80px'})
+                ], style={'textAlign': 'center', 'marginBottom': '20px'})
+            ], width=12)
+        ]),
+        
+        # Título principal
+        html.Div([
+            html.H1('Proyecto Final Visualización de Datos', 
+                   style={'textAlign': 'center', 'color': '#2c3e50', 'fontWeight': 'bold', 'marginBottom': '10px', 'fontSize': '28px'}),
+            
+            html.H2('Universidad del Norte', 
+                   style={'textAlign': 'center', 'color': '#34495e', 'marginBottom': '5px', 'fontSize': '22px'}),
+            
+            html.H3('Barranquilla - 2025', 
+                   style={'textAlign': 'center', 'color': '#7f8c8d', 'marginBottom': '25px', 'fontSize': '18px'})
+        ]),
+        
+        # Línea divisoria
+        html.Hr(style={'borderTop': '2px solid #3498db', 'width': '50%', 'margin': '20px auto'}),
+        
+        # Información del proyecto
+        dbc.Row([
+            dbc.Col([
+                html.Div([
+                    html.H4('Análisis Predictivo de Niveles de Ingreso', 
+                           style={'color': '#2c3e50', 'textAlign': 'center', 'marginBottom': '10px', 'fontSize': '20px'}),
+                    html.P('Dashboard de Visualización con Machine Learning', 
+                          style={'textAlign': 'center', 'color': '#7f8c8d', 'fontSize': '16px', 'marginBottom': '20px'})
+                ])
+            ], width=12)
+        ]),
+        
+        # Información en fila compacta
+        dbc.Row([
+            dbc.Col([
+                html.Div([
+                    html.P('Dataset: Adult Census Income (UCI)', 
+                          style={'textAlign': 'center', 'color': '#7f8c8d', 'fontSize': '14px', 'marginBottom': '15px'})
+                ])
+            ], width=12)
+        ]),
+        
+        dbc.Row([
+            dbc.Col([
+                html.Div([
+                    html.P('Estudiantes: Cristian Linero • David Ibañez', 
+                          style={'textAlign': 'center', 'color': '#2c3e50', 'fontSize': '16px', 'fontWeight': 'bold', 'marginBottom': '15px'})
+                ])
+            ], width=12)
+        ]),
+        
+        dbc.Row([
+            dbc.Col([
+                html.Div([
+                    html.P('Profesora: Keyla Alba', 
+                          style={'textAlign': 'center', 'color': '#2c3e50', 'fontSize': '16px', 'fontWeight': 'bold', 'marginBottom': '25px'})
+                ])
+            ], width=12)
+        ]),
+        
+        # Descripción breve
+        dbc.Row([
+            dbc.Col([
+                html.Div([
+                    html.P('Análisis comparativo de modelos de Machine Learning para predecir niveles de ingreso basado en características demográficas y socioeconómicas.', 
+                          style={'textAlign': 'center', 'color': '#7f8c8d', 'fontSize': '14px', 'lineHeight': '1.4', 
+                                'maxWidth': '700px', 'margin': '0 auto'})
+                ])
+            ], width=12)
+        ], style={'marginBottom': '30px'}),
+        
+        # Footer
+        html.Div([
+            html.Hr(style={'borderTop': '1px solid #ecf0f1', 'margin': '25px auto 15px auto', 'width': '40%'}),
+            html.P('Programa de Ciencia de Datos • 2025', 
+                  style={'textAlign': 'center', 'color': '#95a5a6', 'fontSize': '12px'})
+        ])
+        
+    ], style={
+        'padding': '30px 20px',
+        'backgroundColor': '#ffffff',
+        'minHeight': '100vh',
+        'background': 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
+        'display': 'flex',
+        'flexDirection': 'column',
+        'justifyContent': 'center'
+    })
+], style={
+    'color': '#003366',
+    'fontWeight': 'bold'
+},
+selected_style={
+    'color': '#003366',
+    'fontWeight': 'bold'
+}),
+
     dcc.Tab(label='1. Introducción', children=[
-        html.H2('Introducción'),
-        html.P('Aquí se presenta una visión general del contexto de la problemática, el análisis realizado y los hallazgos encontrados.'),
-        html.P('De manera resumida, indicar lo que se pretende lograr con el proyecto')
-    ]),
+    html.Div([
+        dbc.Row([
+            dbc.Col([
+                html.H2('Introducción', 
+                       style={'textAlign': 'center', 'color': '#2c3e50', 'marginBottom': '30px'})
+            ], width=12)
+        ]),
+        
+        dbc.Row([
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardBody([
+                        html.P('El análisis predictivo de niveles de ingreso constituye una herramienta fundamental para comprender las dinámicas socioeconómicas y ' \
+                        'los factores que influyen en la movilidad económica de la población. ' \
+                        'En este contexto, los modelos de machine learning emergen como alternativas robustas para identificar patrones complejos en datos demográficos, ' \
+                        'permitiendo la identificación temprana de factores asociados con mayores ingresos y facilitando el diseño de políticas públicas más efectivas.',
+                              style={'textAlign': 'justify', 'lineHeight': '1.6', 'marginBottom': '20px'}),
+    
+                        
+                        html.P('Este proyecto se enfoca en el análisis del dataset "Adult Census Income", un benchmark reconocido en la comunidad de machine learning que ' \
+                        'contiene información censal representativa de la población estadounidense. El desarrollo de modelos predictivos precisos permite no solo validar ' \
+                        'hipótesis sobre determinantes socioeconómicos, sino también establecer bases metodológicas para estudios similares en diferentes contextos ' \
+                        'geográficos y temporales.',
+                              style={'textAlign': 'justify', 'lineHeight': '1.6'})
+                    ])
+                ], style={'boxShadow': '0 4px 8px rgba(0,0,0,0.1)', 'marginBottom': '25px'})
+            ], width=12)
+        ]),
+    ], style={'padding': '30px'})
+], style={
+    'color': '#003366',
+    'fontWeight': 'bold'
+},
+selected_style={
+    'color': '#003366',
+    'fontWeight': 'bold'
+}),
 
     dcc.Tab(label='2. Contexto', children=[
-        html.H2('Contexto'),
-        html.P('Descripción breve del contexto del proyecto.'),
-        html.Ul([
-            html.Li('Fuente de los datos: Nombre de la fuente'),
-            html.Li('Variables de interés: listar variables-operacionalización')
+    html.Div([
+        dbc.Row([
+            dbc.Col([
+                html.H2('Contexto del Dataset', 
+                       style={'textAlign': 'center', 'color': '#2c3e50', 'marginBottom': '30px'})
+            ], width=12)
+        ]),
+        
+        dbc.Row([
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardBody([
+                        html.H4('Dataset Adult Census Income', style={'color': '#2c3e50', 'marginBottom': '15px'}),
+                        html.P('El dataset Adult Census Income, también conocido como "Census Income" o simplemente "Adult", es un conjunto de datos clásico en machine learning que contiene información demográfica y socioeconómica de individuos obtenida del censo estadounidense.',
+                              style={'textAlign': 'justify', 'lineHeight': '1.6'})
+                    ])
+                ], style={'boxShadow': '0 4px 8px rgba(0,0,0,0.1)', 'marginBottom': '25px'})
+            ], width=12)
+        ]),
+        
+        dbc.Row([
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardBody([
+                        html.H4('Fuente de Datos', style={'color': '#2c3e50', 'marginBottom': '15px'}),
+                        html.Ul([
+                            html.Li([
+                                html.Strong('Fuente: '),
+                                'UCI Machine Learning Repository'
+                            ], style={'marginBottom': '10px'}),
+                            html.Li([
+                                html.Strong('Enlace: '),
+                                'https://archive.ics.uci.edu/ml/datasets/adult'
+                            ], style={'marginBottom': '10px'}),
+                            html.Li([
+                                html.Strong('Período: '),
+                                'Datos del censo estadounidense de 1994'
+                            ], style={'marginBottom': '10px'}),
+                            html.Li([
+                                html.Strong('Instancias: '),
+                                '32560 registros'
+                            ])
+                        ], style={'lineHeight': '1.6'})
+                    ])
+                ], style={'boxShadow': '0 4px 8px rgba(0,0,0,0.1)', 'marginBottom': '25px'})
+            ], width=12)
+        ]),
+        
+        dbc.Row([
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardBody([
+                        html.H4('Variable de Interés', style={'color': '#2c3e50', 'marginBottom': '15px'}),
+                        html.P('La variable objetivo del análisis es el nivel de ingreso anual, categorizada como:',
+                              style={'marginBottom': '15px'}),
+                        html.Ul([
+                            html.Li('<=50K: Ingresos menores o iguales a 50,000 dólares anuales'),
+                            html.Li('>50K: Ingresos mayores a 50,000 dólares anuales')
+                        ], style={'lineHeight': '1.6'})
+                    ])
+                ], style={'boxShadow': '0 4px 8px rgba(0,0,0,0.1)'})
+            ], width=12)
         ])
-    ]),
+    ], style={'padding': '30px'})
+], style={
+    'color': '#003366',
+    'fontWeight': 'bold'
+},
+selected_style={
+    'color': '#003366',
+    'fontWeight': 'bold'
+}),
 
     dcc.Tab(label='3. Planteamiento del Problema', children=[
-        html.H2('Planteamiento del Problema'),
-        html.P('Describe en pocas líneas la problemática abordada.'),
-        html.P('Pregunta problema: ¿Cuál es la pregunta que intenta responder el análisis?')
-    ]),
+    html.Div([
+        dbc.Row([
+            dbc.Col([
+                html.H2('Planteamiento del Problema', 
+                       style={'textAlign': 'center', 'color': '#2c3e50', 'marginBottom': '30px'})
+            ], width=12)
+        ]),
+        
+        dbc.Row([
+    dbc.Col([
+        dbc.Card([
+            dbc.CardBody([
+                dbc.Row([
+                    dbc.Col([
+                        html.H4('Desigualdad en la Distribución de Ingresos', style={'color': '#2c3e50', 'marginBottom': '10px'}),
+                        html.P('A nivel global, la desigualdad económica sigue siendo un desafío persistente que afecta el desarrollo social y el acceso a oportunidades. La brecha entre diferentes grupos poblacionales continúa ampliándose en múltiples economías.',
+                              style={'textAlign': 'justify', 'lineHeight': '1.5', 'fontSize': '14px', 'marginBottom': '0'}),
+                    ], width=9),
+                    dbc.Col([
+                        html.Img(src='assets/desigualdad.png', 
+                                style={'width': '80px', 'height': '80px', 'borderRadius': '5px', 'objectFit': 'cover'})
+                    ], width=3, style={'display': 'flex', 'justifyContent': 'center', 'alignItems': 'center'})
+                ])
+            ])
+        ], style={'boxShadow': '0 2px 4px rgba(0,0,0,0.1)', 'marginBottom': '15px'})
+    ], width=12)
+]),
+
+dbc.Row([
+    dbc.Col([
+        dbc.Card([
+            dbc.CardBody([
+                dbc.Row([
+                    dbc.Col([
+                        html.H4('Variabilidad en el Rendimiento de Modelos de ML', style={'color': '#2c3e50', 'marginBottom': '10px'}),
+                        html.P('Diferentes algoritmos de machine learning presentan rendimientos variables en problemas de clasificación, dependiendo de la naturaleza de los datos y las relaciones entre variables, lo que dificulta la selección del enfoque óptimo.',
+                              style={'textAlign': 'justify', 'lineHeight': '1.5', 'fontSize': '14px', 'marginBottom': '0'}),
+                    ], width=9),
+                    dbc.Col([
+                        html.Img(src='assets/variabilidad.png', 
+                                style={'width': '80px', 'height': '80px', 'borderRadius': '5px', 'objectFit': 'cover'})
+                    ], width=3, style={'display': 'flex', 'justifyContent': 'center', 'alignItems': 'center'})
+                ])
+            ])
+        ], style={'boxShadow': '0 2px 4px rgba(0,0,0,0.1)', 'marginBottom': '15px'})
+    ], width=12)
+]),
+
+dbc.Row([
+    dbc.Col([
+        dbc.Card([
+            dbc.CardBody([
+                dbc.Row([
+                    dbc.Col([
+                        html.H4('Necesidad de Evaluación Comparativa Sistémica', style={'color': '#2c3e50', 'marginBottom': '10px'}),
+                        html.P('La comparación rigurosa de múltiples algoritmos bajo las mismas condiciones experimentales es esencial para identificar el enfoque más adecuado en problemas específicos de clasificación, como la predicción de niveles de ingreso.',
+                              style={'textAlign': 'justify', 'lineHeight': '1.5', 'fontSize': '14px', 'marginBottom': '0'}),
+                    ], width=9),
+                    dbc.Col([
+                        html.Img(src='assets/comparacion.png', 
+                                style={'width': '80px', 'height': '80px', 'borderRadius': '5px', 'objectFit': 'cover'})
+                    ], width=3, style={'display': 'flex', 'justifyContent': 'center', 'alignItems': 'center'})
+                ])
+            ])
+        ], style={'boxShadow': '0 2px 4px rgba(0,0,0,0.1)', 'marginBottom': '20px'})
+    ], width=12)
+]),
+        
+        dbc.Row([
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardHeader(html.H4('Pregunta de Investigación', style={'color': '#2c3e50', 'margin': '0', 'textAlign': 'center'})),
+                    dbc.CardBody([
+                        html.P('¿Puede un análisis comparativo de múltiples algoritmos de machine learning (Random Forest, XGBoost y Regresión Logística), evaluado mediante técnicas de validación cruzada y métricas robustas, identificar el modelo más efectivo para predecir niveles de ingreso basándose en características demográficas y socioeconómicas?',
+                              style={'textAlign': 'center', 'lineHeight': '1.6', 'fontSize': '18px', 'fontWeight': '500', 'color': '#2c3e50'})
+                    ])
+                ], style={'boxShadow': '0 4px 12px rgba(0,0,0,0.15)', 'border': '2px solid #3498db'})
+            ], width=10, className="mx-auto")
+        ])
+    ], style={'padding': '30px'})
+], style={
+    'color': '#003366',
+    'fontWeight': 'bold'
+},
+selected_style={
+    'color': '#003366',
+    'fontWeight': 'bold'
+}),
 
     dcc.Tab(label='4. Objetivos y Justificación', children=[
     html.H2('Objetivos y Justificación', className="text-center my-4"),
@@ -1139,7 +1534,14 @@ tabs = [
             })
         ], width=6)
     ], className="mb-4")
-]),
+    ], style={
+        'color': '#003366',
+        'fontWeight': 'bold'
+    },
+    selected_style={
+        'color': '#003366',
+        'fontWeight': 'bold'
+    }),
 
         dcc.Tab(label='5. Marco Teórico', children=[
             html.H2('Marco Teórico', className="text-center my-4"),
@@ -1247,15 +1649,36 @@ tabs = [
                     ], width=10, className="mx-auto")
                 ])
             ], style={'marginTop': '40px'})
-        ]),
+        ], style={
+        'color': '#003366',
+        'fontWeight': 'bold'
+        },
+        selected_style={
+            'color': '#003366',
+            'fontWeight': 'bold'
+        }),
 
     dcc.Tab(label='6. Metodología', children=[
         subtabs_metodologia
-    ]),
+    ], style={
+        'color': '#003366',
+        'fontWeight': 'bold'
+    },
+    selected_style={
+        'color': '#003366',
+        'fontWeight': 'bold'
+    }),
 
     dcc.Tab(label='7. Resultados y Análisis Final', children=[
         subtabs_resultados
-    ]),
+    ], style={
+        'color': '#003366',
+        'fontWeight': 'bold'
+    },
+    selected_style={
+        'color': '#003366',
+        'fontWeight': 'bold'
+    }),
 
     dcc.Tab(label='8. Conclusiones', children=[
     html.Div([
@@ -1309,7 +1732,15 @@ tabs = [
         ], className="mb-4"),
     
     ])
-])
+    ], style={
+        'color': '#003366',
+        'fontWeight': 'bold'
+    },
+    selected_style={
+        'color': '#003366',
+        'fontWeight': 'bold'
+    })
+    
 ]
 
 app.layout = dbc.Container([
